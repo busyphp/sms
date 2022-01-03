@@ -15,11 +15,12 @@
 	],
 	"license"     : "CC-BY-NC-4.0",
 	"require"     : {
-		"php"                 : ">=7.2.0",
-		"ext-json"            : "*",
-		"busyphp/busyphp"     : "^6.0",
-		"busyphp/verify-code" : "^1.0",
-		"tencentcloud/sms"    : "^3.0"
+		"php"                            : ">=7.2.0",
+		"ext-json"                       : "*",
+		"busyphp/busyphp"                : "^6.0",
+		"busyphp/verify-code"            : "^1.0",
+		"tencentcloud/sms"               : "^3.0",
+		"alibabacloud/dysmsapi-20170525" : "^2.0"
 	},
 	"require-dev" : {
 		"symfony/var-dumper" : "^4.3|^5.1"
