@@ -126,10 +126,10 @@ class Aliyun implements SmsInterface
      * @param string          $template 魔板ID或魔板内容，魔板内容支持 `{变量名}` 变量
      * @param array           $vars 自定义变量键值对
      * @param string          $attach 自定义附加数据，server会原样返回
-     * @return SendSmsResponseBody
+     * @return SendSmsResponseBody|SendBatchSmsResponseBody
      * @see https://help.aliyun.com/document_detail/101414.html
      */
-    public function send($phone, string $template, array $vars = [], string $attach = '') : SendSmsResponseBody
+    public function send($phone, string $template, array $vars = [], string $attach = '')
     {
         if (!$phone) {
             throw new VerifyException('发送手机号不能为空', 'phone');
@@ -140,10 +140,30 @@ class Aliyun implements SmsInterface
             throw new RuntimeException('批量发送上限为1000个手机号码');
         }
         
+        $hasInternational = false;
         foreach ($phones as $i => $phone) {
             if (0 === strpos($phone, '+86')) {
-                $phones[$i] = substr($phone, 3);
+                $phone = substr($phone, 3);
             }
+            
+            if (0 === strpos($phone, '+')) {
+                $hasInternational = true;
+            }
+            
+            $phones[$i] = $phone;
+        }
+        
+        // 国际短信
+        if ($hasInternational) {
+            if (count($phones) > 1) {
+                throw new RuntimeException('国际短信不支持批量发送');
+            }
+            
+            // 单条走批量发送
+            $data = new SmsBatchSendData();
+            $data->add($phones[0], $vars);
+            
+            return $this->batchSend($data, $template, $attach);
         }
         
         $req                = new SendSmsRequest();
@@ -173,7 +193,7 @@ class Aliyun implements SmsInterface
     {
         $list = $data->getList();
         if (!$list) {
-            throw new VerifyException('发送手机号不能为空', 'phone');
+            throw new VerifyException('发送数据不能为空', 'data');
         }
         
         $phones = [];
