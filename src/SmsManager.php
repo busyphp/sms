@@ -10,7 +10,7 @@ use think\Manager;
  * 短信驱动
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
- * @version $Id: 2022/1/1 下午3:43 Driver.php $
+ * @version $Id: 2022/1/1 下午3:43 SmsManager.php $
  * @mixin Tencent
  */
 class SmsManager extends Manager
