@@ -66,7 +66,7 @@ class IndexController extends AdminController
                 
                 $info['default'] = $value;
                 SystemPlugin::init()->setSetting('busyphp/sms', $info);
-    
+                
                 $name = Sms::channel($value)->getName();
                 $this->log()->record(self::LOG_DEFAULT, "启用【{$name}】短信渠道");
                 
@@ -76,7 +76,8 @@ class IndexController extends AdminController
             throw new RuntimeException('未知类型');
         }
         
-        $list = [];
+        $list      = [];
+        $templates = $this->getSmsConfig('templates', []);
         foreach ($channels as $key => $item) {
             $item['name']     = Sms::channel($key)->getName();
             $item['homepage'] = Sms::channel($key)->getHomepage();
@@ -85,8 +86,9 @@ class IndexController extends AdminController
                 $item['manager'][$formItem->key] = $formItem;
             }
             
-            foreach ($item['templates'] as $field => $value) {
-                $value['type']             = $value['type'] ?? '';
+            $item['templates'] = [];
+            foreach ($templates as $field => $value) {
+                $value['type']             = $item['template_type'] ?? '';
                 $value['name']             = $value['name'] ?? '';
                 $value['vars']             = $value['vars'] ?? [];
                 $item['templates'][$field] = $value;

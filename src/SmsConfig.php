@@ -88,7 +88,7 @@ trait SmsConfig
         $channel  = $channel ?: $this->getSmsDefaultChannel();
         $template = $this->getSmsSetting("templates.{$channel}.{$name}", '');
         if (!$template) {
-            return $this->getSmsConfig("channels.{$channel}.templates.{$name}.value", '');
+            return $this->getSmsConfig("channels.{$channel}.templates.{$name}", '');
         }
         
         return $template;

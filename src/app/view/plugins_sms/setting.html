@@ -55,13 +55,13 @@
                 <div class="form-group-title">短信模板</div>
                 <foreach name="vo.templates" item="item" key="field">
                     <div class="form-group">
-                        <label class="col-sm-2 col-md-3 control-label required">{$item.name}</label>
+                        <label class="col-sm-2 col-md-3 control-label">{$item.name}</label>
                         <div class="col-sm-9 col-md-8">
                             <eq name="item.type" value="id">
-                                <input type="text" name="templates[{$type}][{$field}]" class="form-control" value="{$info['templates'][$type][$field]|default=''}" placeholder="请输入{$item.name}模板ID" required/>
+                                <input type="text" name="templates[{$type}][{$field}]" class="form-control" value="{$info['templates'][$type][$field]|default=''}" placeholder="请输入{$item.name}模板ID"/>
                                 <div class="help-block">设置{$item.name}消息模板ID</div>
                                 <else/>
-                                <textarea class="form-control" name="templates[{$type}][{$field}]" placeholder="请输入{$item.name}文案" required>{$info['templates'][$type][$field]|default=''}</textarea>
+                                <textarea class="form-control" name="templates[{$type}][{$field}]" placeholder="请输入{$item.name}文案" >{$info['templates'][$type][$field]|default=''}</textarea>
                                 <div class="help-block">
                                     设置{$item.name}文案，支持变量:
                                     <foreach name="item.vars" item="var" key="name">
