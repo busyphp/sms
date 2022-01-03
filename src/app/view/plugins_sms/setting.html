@@ -1,0 +1,94 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="page-header">
+        <h4>{$system.page_title} <small>设置短信接口参数、短信文案等</small></h4>
+    </div>
+
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">短信渠道商</th>
+                <th class="text-center" width="100">启用</th>
+                <th class="text-center" width="100">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <foreach name="channels" item="vo" key="type">
+                <tr class="text-center">
+                    <td class="text-left"><a href="{$vo.homepage}" target="_blank">{$vo.name}</a></td>
+                    <td>
+                        <input type="radio" data-toggle="busy-radio" name="default_sms" value="{$type}" <?=is_checked(($info['default'] ?? '') == $type)?>/>
+                    </td>
+                    <td><a class="btn btn-primary btn-xs"
+                           data-toggle="busy-modal"
+                           data-title="设置【{$vo.name}】短信配置"
+                           data-ok="设置"
+                           data-form-on-success="@route.reload"
+                           data-content="#sms_setting_{$type}"><i class="fa fa-cog"></i></a></td>
+                </tr>
+            </foreach>
+        </tbody>
+    </table>
+
+
+    <foreach name="channels" item="vo" key="type">
+        <script type="text/html" id="sms_setting_{$type}">
+            <div class="form-horizontal">
+                <input type="hidden" name="action" value="setting"/>
+                <input type="hidden" name="type" value="{$type}"/>
+                <div class="form-group-title">接口配置</div>
+                <foreach name="vo.manager" item="item" key="field">
+                    <div class="form-group">
+                        <label class="col-sm-2 col-md-3 control-label {$item['must'] ? 'required' : ''}">{$item.name}</label>
+                        <div class="col-sm-9 col-md-8">
+                            <eq name="item.type" value="select">
+                                <select class="form-control" name="channels[{$type}][{$field}]" {$item['must'] ? 'required' : ''}>
+                                    <?=\BusyPHP\helper\TransHelper::toOptionHtml($item['options'], $info['channels'][$type][$field] ?? '')?>
+                                </select>
+                                <else/>
+                                <input type="text" {$item['must'] ? 'required' : ''} class="form-control" name="channels[{$type}][{$field}]" value="{$info['channels'][$type][$field]|default=''}" placeholder="请输入{$item.name}"/>
+                            </eq>
+                            <span class="help-block">{$item.desc}</span>
+                        </div>
+                    </div>
+                </foreach>
+                <div class="form-group-title">短信模板</div>
+                <foreach name="vo.templates" item="item" key="field">
+                    <div class="form-group">
+                        <label class="col-sm-2 col-md-3 control-label required">{$item.name}</label>
+                        <div class="col-sm-9 col-md-8">
+                            <eq name="item.type" value="id">
+                                <input type="text" name="templates[{$type}][{$field}]" class="form-control" value="{$info['templates'][$type][$field]|default=''}" placeholder="请输入{$item.name}模板ID" required/>
+                                <div class="help-block">设置{$item.name}消息模板ID</div>
+                                <else/>
+                                <textarea class="form-control" name="templates[{$type}][{$field}]" placeholder="请输入{$item.name}文案" required>{$info['templates'][$type][$field]|default=''}</textarea>
+                                <div class="help-block">
+                                    设置{$item.name}文案，支持变量:
+                                    <foreach name="item.vars" item="var" key="name">
+                                        <code>{$name}: {{$var}}</code>
+                                    </foreach>
+                                </div>
+                            </eq>
+                        </div>
+                    </div>
+                </foreach>
+            </div>
+        </script>
+    </foreach>
+</block>
+<block name="foot">
+    <script>
+        busyAdmin.ready(function () {
+            $('[name="default_sms"]').on('change', function () {
+                busyAdmin
+                    .request('{:url()}')
+                    .method('post')
+                    .params({
+                        action : 'default',
+                        value  : $(this).val()
+                    })
+                    .exec()
+            });
+        });
+    </script>
+</block>
