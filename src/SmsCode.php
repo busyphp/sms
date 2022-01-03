@@ -28,7 +28,7 @@ class SmsCode
      */
     public function send(string $phone, string $type, ?int $shape = null, string $channel = '') : string
     {
-        $template = $this->getSmsTemplate($type);
+        $template = $this->getSmsTemplate($type, $channel);
         if (!$template) {
             throw new RuntimeException('未配置短信模板');
         }
