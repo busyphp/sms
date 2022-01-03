@@ -56,7 +56,7 @@ class ManagerController extends PluginManager
             
             // 不存在设置菜单则创建
             if (!$menuModel->whereEntity(SystemMenuField::path($settingPath))->count()) {
-                $menuModel->addMenu($settingPath, '短信配置', '#system_setting', 'fa fa-envelope-o', false);
+                $menuModel->addMenu($settingPath, '短信参数配置', '#system_setting', 'fa fa-envelope-o', false);
             }
             
             foreach ($this->deleteTableSql as $item) {
