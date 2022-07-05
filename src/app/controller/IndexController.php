@@ -79,9 +79,10 @@ class IndexController extends AdminController
         $list      = [];
         $templates = $this->getSmsConfig('templates', []);
         foreach ($channels as $key => $item) {
-            $item['name']     = Sms::channel($key)->getName();
-            $item['homepage'] = Sms::channel($key)->getHomepage();
-            $item['manager']  = [];
+            $item['name']          = Sms::channel($key)->getName();
+            $item['homepage']      = Sms::channel($key)->getHomepage();
+            $item['manager']       = [];
+            $item['international'] = $this->getSmsConfig("channels.$key.international", false);
             foreach (Sms::channel($key)->getManagerForms() as $formItem) {
                 $item['manager'][$formItem->key] = $formItem;
             }

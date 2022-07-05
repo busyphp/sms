@@ -19,16 +19,16 @@ class SmsCode
     
     /**
      * 发送短信验证码
-     * @param string $phone 手机号
-     * @param string $type 短信类型
-     * @param int    $shape 验证码形式，默认为数字
-     * @param string $channel 发送短信渠道
+     * @param string   $phone 手机号
+     * @param string   $type 短信类型
+     * @param int|null $shape 验证码形式，默认为数字
+     * @param string   $channel 发送短信渠道
      * @return string 发送成功的短信验证码
      * @throws Throwable
      */
     public function send(string $phone, string $type, ?int $shape = null, string $channel = '') : string
     {
-        $template = $this->getSmsTemplate($type, $channel);
+        $template = $this->getSmsTemplate(!(false === strpos($phone, '+') || 0 === strpos($phone, '+86')), $type, $channel);
         if (!$template) {
             throw new RuntimeException('未配置短信模板');
         }

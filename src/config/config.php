@@ -21,6 +21,7 @@ return [
                 'region'            => '',
                 'sign'              => '',
             ],
+            'international' => false,
             'template_type' => 'id',
             'templates'     => [
                 'login' => ''
@@ -40,6 +41,7 @@ return [
                 'sender_id'   => '',
                 'extend_code' => '',
             ],
+            'international' => false,
             'template_type' => 'id',
             'templates'     => [
                 'login' => ''
@@ -54,6 +56,7 @@ return [
                 'app_key' => '',
                 'sign'    => ''
             ],
+            'international' => false,
             'template_type' => '',
             'templates'     => [
                 'login' => '您正在执行登录操作，验证码为{code}，10分钟内有效'

@@ -79,16 +79,37 @@ trait SmsConfig
     
     /**
      * 获取短信模板内容或魔板ID
+     * @param bool   $international 是否使用国际短信魔板
      * @param string $name 模板名称
      * @param string $channel 渠道名称
      * @return string
      */
-    public function getSmsTemplate(string $name, string $channel = '') : string
+    public function getSmsTemplate(bool $international, string $name, string $channel = '') : string
     {
-        $channel  = $channel ?: $this->getSmsDefaultChannel();
-        $template = $this->getSmsSetting("templates.{$channel}.{$name}", '');
+        $channel = $channel ?: $this->getSmsDefaultChannel();
+        
+        // 优先获取国际短信模板
+        $template = '';
+        if ($international) {
+            $template = $this->getSmsSetting("templates.$channel.{$name}_international", '');
+        }
+        
+        // 没有国际短信模板获取常规短信模板
         if (!$template) {
-            return $this->getSmsConfig("channels.{$channel}.templates.{$name}", '');
+            $template = $this->getSmsSetting("templates.$channel.$name", '');
+        }
+        
+        // 获取渠道默认配置
+        if (!$template) {
+            // 优先获取国际短信模板
+            if ($international) {
+                $template = $this->getSmsConfig("channels.$channel.templates.{$name}_international", '');
+            }
+            
+            // 获取默认设置
+            if (!$template) {
+                $template = $this->getSmsConfig("channels.$channel.templates.$name", '');
+            }
         }
         
         return $template;

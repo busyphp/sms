@@ -10,6 +10,7 @@ use BusyPHP\sms\contract\SmsManagerFormItem;
 use BusyPHP\sms\contract\SmsInterface;
 use BusyPHP\sms\driver\mysubmail\MysubmailSmsConfig;
 use BusyPHP\sms\driver\mysubmail\MysubmailSmsSendStatus;
+use BusyPHP\sms\SmsConfig;
 use RuntimeException;
 
 /**
@@ -21,10 +22,18 @@ use RuntimeException;
  */
 class Mysubmail implements SmsInterface
 {
+    use SmsConfig;
+    
     /**
      * @var MysubmailSmsConfig
      */
     private $config;
+    
+    /**
+     * 是否启用国际短信
+     * @var bool
+     */
+    private $international;
     
     
     /**
@@ -33,7 +42,8 @@ class Mysubmail implements SmsInterface
      */
     public function __construct(MysubmailSmsConfig $config)
     {
-        $this->config = $config;
+        $this->config        = $config;
+        $this->international = $this->getSmsConfig('channels.mysubmail.international', false);
     }
     
     
@@ -45,10 +55,12 @@ class Mysubmail implements SmsInterface
     
     /**
      * 签名
-     * @param array $params
+     * @param string $appId
+     * @param string $appKey
+     * @param array  $params
      * @return string
      */
-    protected function sign(array $params) : string
+    protected function sign(string $appId, string $appKey, array $params) : string
     {
         ksort($params);
         reset($params);
@@ -58,7 +70,7 @@ class Mysubmail implements SmsInterface
         }
         $temp = implode('&', $temp);
         
-        return md5("{$this->config->app_id}{$this->config->app_key}{$temp}{$this->config->app_id}{$this->config->app_key}");
+        return md5("{$appId}{$appKey}{$temp}{$appId}{$appKey}");
     }
     
     
@@ -77,22 +89,31 @@ class Mysubmail implements SmsInterface
             $template = str_replace("{{$key}}", $value, $template);
         }
         
+        $appId         = $this->config->app_id;
+        $appKey        = $this->config->app_key;
+        $appSign       = $this->config->sign;
+        $international = 0 === strpos($phone, '+') && false === strpos($phone, '+86');
+        if ($this->international && $international) {
+            $appId   = $this->config->international_app_id;
+            $appKey  = $this->config->international_app_key;
+            $appSign = $this->config->international_sign ?: $appSign;
+        }
+        
         $params              = [];
-        $params['appid']     = $this->config->app_id;
+        $params['appid']     = $appId;
         $params['to']        = $phone;
-        $params['content']   = "【{$this->config->sign}】{$template}";
+        $params['content']   = "【{$appSign}】{$template}";
         $params['timestamp'] = time();
         $params['sign_type'] = 'md5';
-        $params['signature'] = $this->sign($params);
+        $params['signature'] = $this->sign($appId, $appKey, $params);
         
         if (0 === strpos($phone, '+86')) {
             $phone = substr($phone, 3);
         }
         
         // 国际短信
-        $international = 0 === strpos($phone, '+') && false === strpos($phone, '+86');
-        $result        = HttpHelper::post($international ? 'https://api.mysubmail.com/internationalsms/send.json' : 'https://api.mysubmail.com/message/send.json', $params);
-        $result        = json_decode($result, true);
+        $result = HttpHelper::post($international ? 'https://api-v4.mysubmail.com/internationalsms/send.json' : 'https://api-v4.mysubmail.com/sms/send.json', $params);
+        $result = json_decode($result, true);
         if ($result['status'] != 'success') {
             throw new RuntimeException("{$result['msg']}[{$result['code']}]");
         }
@@ -131,6 +152,13 @@ class Mysubmail implements SmsInterface
         $forms[] = new SmsManagerFormItem('app_id', 'AppID', '登录 <a href="https://www.mysubmail.com/console/sms/apps" target="_blank">SUBMAIL</a> 创建AppID后获取');
         $forms[] = new SmsManagerFormItem('app_key', 'Appkey', '登录 <a href="https://www.mysubmail.com/console/sms/apps" target="_blank">SUBMAIL</a> 创建AppID后获取');
         $forms[] = new SmsManagerFormItem('sign', '短信签名', '设置短信签名，如：函拓科技');
+        
+        if ($this->international) {
+            $forms[] = new SmsManagerFormItem('international_app_id', '国际短信AppID', '登录 <a href="https://www.mysubmail.com/console/sms/apps" target="_blank">SUBMAIL</a> 创建AppID后获取');
+            $forms[] = new SmsManagerFormItem('international_app_key', '国际短信Appkey', '登录 <a href="https://www.mysubmail.com/console/sms/apps" target="_blank">SUBMAIL</a> 创建AppID后获取');
+            $forms[] = new SmsManagerFormItem('international_sign', '国际短信签名', '设置短信签名，如：函拓科技，不设置将使用国内短信签名', false);
+        }
+        
         
         return $forms;
     }
@@ -208,9 +236,9 @@ class Mysubmail implements SmsInterface
         $params['multi']     = json_encode($multi, JSON_UNESCAPED_UNICODE);
         $params['timestamp'] = time();
         $params['sign_type'] = 'md5';
-        $params['signature'] = $this->sign($params);
+        $params['signature'] = $this->sign($this->config->app_id, $this->config->app_key, $params);
         
-        $result = HttpHelper::post('https://api.mysubmail.com/message/multisend.json', $params);
+        $result = HttpHelper::post('https://api-v4.mysubmail.com/sms/batchsend.json', $params);
         $result = json_decode($result, true) ?: [];
         if (ArrayHelper::isAssoc($result)) {
             throw new RuntimeException(($result['msg'] ?? '未知错误') . '[' . ($result['code'] ?? 0) . ']');

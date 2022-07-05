@@ -59,9 +59,17 @@
                         <div class="col-sm-9 col-md-8">
                             <eq name="item.type" value="id">
                                 <input type="text" name="templates[{$type}][{$field}]" class="form-control" value="{$info['templates'][$type][$field]|default=''}" placeholder="请输入{$item.name}模板ID"/>
+                                <eq name="vo.international" value="1">
+                                    <div class="space-5"></div>
+                                    <input type="text" name="templates[{$type}][international_{$field}]" class="form-control" value="{$info['templates'][$type]['international_'.$field]|default=''}" placeholder="请输入{$item.name}国际短信模板ID"/>
+                                </eq>
                                 <div class="help-block">设置{$item.name}消息模板ID</div>
                                 <else/>
                                 <textarea class="form-control" name="templates[{$type}][{$field}]" placeholder="请输入{$item.name}文案" >{$info['templates'][$type][$field]|default=''}</textarea>
+                                <eq name="vo.international" value="1">
+                                    <div class="space-5"></div>
+                                    <textarea class="form-control" name="templates[{$type}][international_{$field}]" placeholder="请输入{$item.name}国际短信文案" >{$info['templates'][$type]['international_'.$field]|default=''}</textarea>
+                                </eq>
                                 <div class="help-block">
                                     设置{$item.name}文案，支持变量:
                                     <foreach name="item.vars" item="var" key="name">
