@@ -9,9 +9,9 @@
 composer require busyphp/sms
 ```
 
-> 安装完成后可以通过后台管理 > 开发模式 > 插件管理进行 `安装/卸载`
+> 安装完成后可以通过后台管理 > 开发模式 > 插件管理进行 `安装`
 
-## 配置 `config/busy-sms.php`
+> 配置 `config/sms.php`
 
 ```php
 <?php
@@ -20,95 +20,91 @@ return [
     'default'     => 'aliyun',
     
     // 配置短信通道
-    'channels'    => [
+    'drivers'     => [
         // 阿里云短信配置
         'aliyun'    => [
-            'driver'        => 'aliyun',
-            'config'        => [
-                'access_key_id'     => '',
-                'access_key_secret' => '',
-                'region'            => '',
-                'sign'              => '',
-            ],
-            'template_type' => 'id',
-            'templates'     => [
-                'login' => '' // 阿里云模板ID
+            'type'              => 'aliyun',
+            
+            // 阿里云短信参数
+            'access_key_id'     => '',
+            'access_key_secret' => '',
+            'region'            => '',
+            'sign'              => '',
+            
+            // 模版ID映射
+            'template'          => [
+                'login' => ''
             ]
         ],
         
         // 腾讯云短信配置
         'tencent'   => [
-            'driver'        => 'tencent',
-            'config'        => [
-                'secret_id'   => '',
-                'secret_key'  => '',
-                'sdk_app_id'  => '',
-                'app_key'     => '',
-                'sign'        => '',
-                'region'      => '',
-                'sender_id'   => '',
-                'extend_code' => '',
-            ],
-            'template_type' => 'id',
-            'templates'     => [
-                'login' => '' // 腾讯云模板ID
+            'type'        => 'tencent',
+            
+            // 腾讯云短信参数
+            'secret_id'   => '',
+            'secret_key'  => '',
+            'sdk_app_id'  => '',
+            'app_key'     => '',
+            'sign'        => '',
+            'region'      => '',
+            'sender_id'   => '',
+            'extend_code' => '',
+            
+            // 模版ID映射
+            'template'    => [
+                'login' => ''
             ]
         ],
         
         // SUBMAIL赛邮云通信
         'mysubmail' => [
-            'driver'        => 'mysubmail',
-            'config'        => [
-                'app_id'  => '',
-                'app_key' => '',
-                'sign'    => '函拓科技'
-            ],
-            'template_type' => '',
-            'templates'     => [
-                'login' => '您正在执行登录操作，验证码为{code}，10分钟内有效', // 登录验证码文案定义
+            'type'     => 'mysubmail',
+            
+            // SUBMAIL赛邮云通信参数
+            'app_id'   => '',
+            'app_key'  => '',
+            'sign'     => '',
+            
+            // 模版内容映射
+            'template' => [
+                'login' => '您正在执行登录操作，验证码为{code}，10分钟内有效'
             ]
         ]
     ],
     
-    // 短信验证码配置
+    // busyphp/verify-code插件配置
     'verify_code' => [
-        // 账户类型
+        // 设置发送短信验证码的账号类型
         'account_type' => 'phone'
     ],
     
     // 短信模板配置
-    'templates'   => [
+    'template'    => [
+        // 场景名称 => 配置
         'login' => [
-            'name' => '登录验证码', // 后台管理表单名称
+            // 表单名称
+            'name' => '登录验证码',
+            // 支持变量
             'vars' => [
-                '验证码' => 'code' // 变量名称
+                'code' => '验证码'
             ]
         ]
     ],
+    
+    // 多语言配置，默认为简体中文，故不需要添加 `zh-cn`
+    'lang'        => [
+    ]
 ];
 ```
 
 ## 发送短信
 ```php
-// 单发/批量发送相同的短信 - 自定义模板内容
-\BusyPHP\sms\facade\Sms::send('手机号', '登录验证码为{code}', ['code' => 123456]);
-\BusyPHP\sms\facade\Sms::send(['手机号1','手机号2'], '登录验证码为{code}', ['code' => 123456]);
+// 发送短信 - 自定义模板内容
+\BusyPHP\facade\Sms::driver()->send('手机号', '登录验证码为{code}', ['code' => 123456]);
 
-// 单发/批量发送相同的短信 - 模板ID
-\BusyPHP\sms\facade\Sms::send('手机号', 'TEMPLATE_ID1', ['code' => 123456]);
-\BusyPHP\sms\facade\Sms::send(['手机号1','手机号2'], 'TEMPLATE_ID1', ['code' => 123456]);
-
-// 批量发送 - 自定义模板内容
-$data = new \BusyPHP\sms\contract\SmsBatchSendData();
-$data->add('手机号1',['code' => 123456]);
-$data->add('手机号2',['code' => 123456]);
-$data->add('手机号3',['code' => 123456]);
-$data->add('手机号4',['code' => 123456]);
-\BusyPHP\sms\facade\Sms::batchSend($data, '登录验证码为{code}');
-
-// 批量发送 - 模板ID
-\BusyPHP\sms\facade\Sms::batchSend($data, 'TEMPLATE_ID1');
-
+// 发送短信 - 模板ID
+\BusyPHP\facade\Sms::driver()->send('手机号', 'TEMPLATE_ID1', ['code' => 123456]);
 ```
 
 ## 验证码发送/验证/清理
@@ -116,20 +112,14 @@ $data->add('手机号4',['code' => 123456]);
 ```php
 
 // 发送
-$code = \BusyPHP\sms\facade\SmsCode::send('手机号', 'login');
-
-// 发送 - 定义验证码为字母数字混合
-$code = \BusyPHP\sms\facade\SmsCode::send('手机号', 'login', \BusyPHP\verifycode\model\VerifyCode::SHAPE_LETTER_NUMBER);
+$code = \BusyPHP\facade\Sms::driver()->sendCode('login', '手机号');
 
 // 发送 - 使用特定渠道
-$code = \BusyPHP\sms\facade\SmsCode::send('手机号', 'login', null, 'aliyun');
+$code = \BusyPHP\facade\Sms::driver('aliyun')->sendCode('login', '手机号');
 
 // 验证
-\BusyPHP\sms\facade\SmsCode::check('手机号', 'login', '验证码');
-
-// 验证过程不清理短信
-\BusyPHP\sms\facade\SmsCode::check('手机号', 'login', '验证码', false);
+\BusyPHP\facade\Sms::driver()->checkCode('login', '手机号', '验证码');
 
 // 清理验证码
-\BusyPHP\sms\facade\SmsCode::clear('手机号', 'login');
+\BusyPHP\facade\Sms::driver()->clearCode('login', '手机号');
 ```

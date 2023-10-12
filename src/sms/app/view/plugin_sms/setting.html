@@ -1,0 +1,94 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div id=":modal_id_app" class="form-horizontal">
+        <template>
+            <input type="hidden" name="id" v-model="id"/>
+
+            <div class="form-group-title">短信参数配置</div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-3">短信渠道商</label>
+                <div class="col-sm-8">
+                    <input type="text" value="{$name} - {$id}" disabled class="form-control"/>
+                </div>
+            </div>
+
+            <div class="form-group" v-for="(item,index) in form">
+                <label class="control-label col-sm-3" :class="{required: item.required}">{{item.label}}</label>
+                <div class="col-sm-8">
+                    <select v-if="item.tag === 'select'"
+                            :name="'content['+ item.name +']'"
+                            :required="item.required"
+                            :multiple="item.multiple"
+                            class="form-control">
+                        <option v-for="opt in item.options" :value="opt.value" :selected="config[item.name] === opt.value">
+                            {{opt.text}}
+                        </option>
+                    </select>
+
+                    <textarea v-else-if="item.tag === 'textarea'"
+                              :name="'content['+ item.name +']'"
+                              :required="item.required"
+                              :rows="item.rows"
+                              :placeholder="item.placeholder"
+                              v-model="config[item.name]"
+                              class="form-control"></textarea>
+
+                    <input v-else
+                           :type="item.type || 'text'"
+                           :name="'content['+ item.name +']'"
+                           :placeholder="item.placeholder"
+                           :required="item.required"
+                           v-bind="item.attributes"
+                           v-model="config[item.name]"
+                           class="form-control"/>
+
+                    <span class="help-block" v-if="item.help" v-html="item.help"></span>
+                </div>
+            </div>
+
+            <div class="form-group-title">
+                短信模版{{template_id ? 'ID' : '文案'}}
+                <select class="form-control input-xs width-100 pull-right" v-model="current_lang">
+                    <option v-for="item in lang_list" :value="item.lang">{{item.name}}</option>
+                </select>
+            </div>
+
+            <template v-for="lang in lang_list">
+                <div v-show="current_lang === lang.lang" class="form-group" v-for="(item, key) in template_config">
+                    <label class="control-label col-sm-3">{{item.name}}</label>
+                    <div class="col-sm-8" v-if="template_id">
+                        <input type="text" class="form-control" v-model="config.template[key + lang.suffix]" :placeholder="`请输入 ${item.name} 短信模版ID`" :name="`content[template][${key}${lang.suffix}]`"/>
+                        <div class="help-block">设置 {{item.name}} 消息模板ID</div>
+                    </div>
+                    <div class="col-sm-8" v-else>
+                        <textarea class="form-control" :placeholder="`请输入${item.name}短信文案`" v-model="config.template[key + lang.suffix]" :name="`content[template][${key}${lang.suffix}]`"></textarea>
+                        <div class="help-block">
+                            设置{{item.name}}文案，模板变量:
+                            <code v-for="(name, ver) in (item.vars || {})" v-text="`${name}:{${ver}}`"></code>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+    </div>
+</block>
+<script src="/vue.js"></script>
+<block name="foot">
+    <script>
+        busyAdmin.ready(busyAdmin.lib.vue, function () {
+            new Vue({
+                el   : '#:modal_id_app',
+                data : {
+                    form            : <?=json_encode($form ?: [])?>,
+                    id              : '{$id}',
+                    config          : <?=json_encode($content ?: new stdClass())?>,
+                    template_id     : <?=$template_id ? 'true' : 'false'?>,
+                    template_config : <?=json_encode($template_config ?: new stdClass())?>,
+                    current_lang    : '',
+                    lang_list       : <?=json_encode($lang_list)?>
+                }
+            });
+        });
+    </script>
+</block>

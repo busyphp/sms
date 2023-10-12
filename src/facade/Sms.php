@@ -1,10 +1,9 @@
 <?php
+declare(strict_types = 1);
 
-namespace BusyPHP\sms\facade;
+namespace BusyPHP\facade;
 
-use BusyPHP\sms\contract\SmsBatchSendData;
-use BusyPHP\sms\contract\SmsInterface;
-use BusyPHP\sms\SmsManager;
+use BusyPHP\sms\Driver;
 use think\Facade;
 
 /**
@@ -12,15 +11,18 @@ use think\Facade;
  * @author busy^life <busy.life@qq.com>
  * @copyright (c) 2015--2022 ShanXi Han Tuo Technology Co.,Ltd. All rights reserved.
  * @version $Id: 2022/1/2 下午12:10 Sms.php $
- * @mixin SmsManager
- * @method static mixed send(string|string[] $phone, string $template, array $params = [], string $attach = '') 单发/批量发送相同内容的短信
- * @method static mixed batchSend(SmsBatchSendData $data, string $template, string $attach = '') 批量发送不同内容的短信
- * @method static SmsInterface channel(string $name) 切换发送渠道
+ * @mixin \BusyPHP\Sms
+ * @method static Driver driver(string $name = null) 切换发送渠道
+ * @method static mixed getConfig(string $name = null, mixed $default = null) 获取配置
+ * @method static mixed getDriverConfig(string $driver, string $name = null, mixed $default = null) 获取指定驱动配置
+ * @method static string getSettingKey(string $name) 获取后台设置驱动配置键名
+ * @method static string getDefaultSettingKey() 获取后台默认通道配置键名
+ * @method static string getDefaultDriver() 获取默认通道名称
  */
 class Sms extends Facade
 {
     protected static function getFacadeClass()
     {
-        return SmsManager::class;
+        return \BusyPHP\Sms::class;
     }
 }

@@ -1,0 +1,69 @@
+<extend name="@admin:layout"/>
+<block name="content">
+    <div class="panel panel-default">
+        <include file="@admin/system_manager/nav"/>
+        <div class="panel-body">
+            <div data-toggle="busy-table"
+                 data-pagination="false"
+                 data-fixed-right-number="1"
+                 data-bordered="true"
+                 data-url="__URL__">
+
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th data-field="name"
+                                data-title="渠道商"
+                                data-formatter="@"
+                                data-show-overflow="true">
+                                <script type="text/html">
+                                    <a href="{{item.homepage}}" target="_blank">{{value}}</a>
+                                </script>
+                            </th>
+
+                            <ba:access value="set_default">
+                                <th data-field="is_default"
+                                    data-title="默认通道"
+                                    data-align="center"
+                                    data-width="120"
+                                    data-formatter="@">
+                                    <script type="text/html">
+                                        <ba-if value="item.is_default">
+                                            <span class="text-success"><i class="fa fa-check"></i> 默认通道</span>
+                                            <ba-else></ba-else>
+                                            <a class="btn btn-xs btn-default"
+                                               data-toggle="busy-request"
+                                               data-confirm="确认要将该通道设为默认短信通道吗？"
+                                               data-url="{:url('set_default?id=')}{{item.id}}"
+                                               data-on-success="@table.reload">
+                                                设为默认
+                                            </a>
+                                        </ba-if>
+                                    </script>
+                                </th>
+                            </ba:access>
+
+                            <ba:access value="setting">
+                                <th data-title="操作"
+                                    data-align="center"
+                                    data-formatter="@"
+                                    width="80">
+                                    <script type="text/html">
+                                        <a class="btn btn-success btn-xs"
+                                           data-toggle="busy-modal"
+                                           data-ok="配置"
+                                           data-size="lg"
+                                           data-url="{:url('setting?id=')}{{item.id}}"
+                                           data-form-on-success="@table.reload|@modal.close">
+                                            <i class="fa fa-cog"></i>
+                                        </a>
+                                    </script>
+                                </th>
+                            </ba:access>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</block>

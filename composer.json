@@ -13,12 +13,12 @@
 			"email" : "busy.life@qq.com"
 		}
 	],
-	"license"     : "CC-BY-NC-4.0",
+	"license"     : "Apache-2.0",
 	"require"     : {
-		"php"                            : ">=7.2.0",
+		"php"                            : ">=8.0",
 		"ext-json"                       : "*",
-		"busyphp/busyphp"                : "^6.0",
-		"busyphp/verify-code"            : "^1.0",
+		"busyphp/busyphp"                : "^7.0",
+		"busyphp/verify-code"            : "^2.0",
 		"tencentcloud/sms"               : "^3.0",
 		"alibabacloud/dysmsapi-20170525" : "^2.0"
 	},
@@ -27,34 +27,25 @@
 	},
 	"autoload"    : {
 		"psr-4" : {
-			"BusyPHP\\sms\\" : "src"
+			"BusyPHP\\" : "src"
 		}
-	},
-	"config"      : {
-		"preferred-install" : "dist"
 	},
 	"extra"       : {
 		"think"   : {
 			"config" : {
-				"busy-sms" : "src/config/config.php"
+				"sms" : "src/config/config.php"
 			}
 		},
 		"busyphp" : {
 			"manager"  : {
-				"name"    : "短信模块",
-				"class"   : "BusyPHP\\sms\\app\\controller\\ManagerController",
-				"install" : {
-					"install_operate"   : {
-						"request_confirm" : "确认要安装 <code>__package__</code> 吗"
-					},
-					"uninstall_operate" : {
-						"request_confirm" : "确认要卸载 <code>__package__</code> 吗"
-					}
-				}
+				"name" : "短信模块"
 			},
 			"services" : [
 				"BusyPHP\\sms\\Service"
 			]
 		}
+	},
+	"config"      : {
+		"preferred-install" : "dist"
 	}
 }
