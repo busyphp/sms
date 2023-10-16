@@ -181,7 +181,7 @@ abstract class Driver
      */
     public function checkCode(string $scene, string $no, string $code, bool $clear = true) : void
     {
-        VerifyCode::check($this->getCodeAccountType(), $no, $code, $scene, $clear);
+        VerifyCode::check($this->getCodeAccountType(), $this->coverNo($no), $code, $scene, $clear);
     }
     
     
@@ -193,6 +193,6 @@ abstract class Driver
      */
     public function clearCode(string $scene, string $no) : void
     {
-        VerifyCode::clear($this->getCodeAccountType(), $no, $scene);
+        VerifyCode::clear($this->getCodeAccountType(), $this->coverNo($no), $scene);
     }
 }
