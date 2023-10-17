@@ -1,10 +1,10 @@
 <?php
 return [
     // 默认短信通道
-    'default'     => 'aliyun',
+    'default'  => 'aliyun',
     
     // 配置短信通道
-    'drivers'     => [
+    'drivers'  => [
         // 阿里云短信配置
         'aliyun'    => [
             'type'              => 'aliyun',
@@ -57,15 +57,9 @@ return [
         ]
     ],
     
-    // busyphp/verify-code插件配置
-    'verify_code' => [
-        // 设置发送短信验证码的账号类型
-        'account_type' => 'phone'
-    ],
-    
     // 短信模板配置
-    'template'    => [
-        // 场景名称 => 配置
+    'template' => [
+        // 模版ID => 模版配置
         'login' => [
             // 表单名称
             'name' => '登录验证码',
@@ -77,6 +71,6 @@ return [
     ],
     
     // 多语言配置，默认为简体中文，故不需要添加 `zh-cn`
-    'lang'        => [
+    'lang'     => [
     ]
 ];

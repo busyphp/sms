@@ -152,14 +152,14 @@ class Mysubmail extends Driver
     /**
      * 单发/批量发送相同内容的短信
      * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @param string $template 模板内容支持 `{变量名}` 变量
+     * @param string $content 模板内容支持 `{变量名}` 变量
      * @param array  $vars 自定义变量键值对
      * @throws GuzzleException
      */
-    protected function handleSend(string $no, string $template, array $vars = []) : array
+    protected function handle(string $no, string $content, array $vars = []) : array
     {
         foreach ($vars as $key => $value) {
-            $template = str_replace(sprintf('{%s}', $key), $value, $template);
+            $content = str_replace(sprintf('{%s}', $key), $value, $content);
         }
         
         $params              = [];
@@ -177,13 +177,13 @@ class Mysubmail extends Driver
             $params['inter_appid']     = $this->internationalAppId;
             $params['inter_signature'] = $this->internationalAppKey;
             if ($this->internationalSign) {
-                $params['content'] = sprintf('[%s] %s', $this->internationalSign, $template);
+                $params['content'] = sprintf('[%s] %s', $this->internationalSign, $content);
             } else {
-                $params['content'] = $template;
+                $params['content'] = $content;
             }
             $url = 'https://api-v4.mysubmail.com/sms/unionsend.json';
         } else {
-            $params['content'] = sprintf('【%s】%s', $this->sign, $template);
+            $params['content'] = sprintf('【%s】%s', $this->sign, $content);
             $url               = 'https://api-v4.mysubmail.com/sms/send.json';
         }
         

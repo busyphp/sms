@@ -170,22 +170,22 @@ class Aliyun extends Driver
     /**
      * 发送短信
      * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @param string $template 魔板ID
+     * @param string $content 魔板ID
      * @param array  $vars 自定义变量键值对
      * @return SendSmsResponseBody
      * @see https://help.aliyun.com/document_detail/101414.html
      */
-    protected function handleSend(string $no, string $template, array $vars = []) : SendSmsResponseBody
+    protected function handle(string $no, string $content, array $vars = []) : SendSmsResponseBody
     {
         $req                = new SendSmsRequest();
-        $req->phoneNumbers  = $this->coverNo($no);
+        $req->phoneNumbers  = $no;
         $req->signName      = $this->sign;
-        $req->templateCode  = $template;
+        $req->templateCode  = $content;
         $req->templateParam = json_encode($vars, JSON_UNESCAPED_UNICODE);
         
         $res = $this->createClient()->sendSms($req)->body;
         if ($res->code != 'OK') {
-            throw new RuntimeException("$res->message[$res->code]");
+            throw new RuntimeException(sprintf("%s[%s]", $res->message, $res->code));
         }
         
         return $res;

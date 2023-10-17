@@ -4,8 +4,6 @@ declare(strict_types = 1);
 namespace BusyPHP\sms;
 
 use BusyPHP\exception\VerifyException;
-use BusyPHP\facade\Sms;
-use BusyPHP\facade\VerifyCode;
 use RuntimeException;
 use think\facade\Lang;
 use Throwable;
@@ -98,101 +96,52 @@ abstract class Driver
     /**
      * 处理发送短信
      * @param string $no 手机号，如：+8613333333333 或 +8201011440
-     * @param string $template 模板ID或模板内容，模板内容支持 `{变量名}` 变量
+     * @param string $content 模板ID或模板内容，模板内容支持 `{变量名}` 变量
      * @param array  $vars 自定义变量键值对
      * @return mixed
+     * @throws Throwable
      */
-    abstract protected function handleSend(string $no, string $template, array $vars = []) : mixed;
+    abstract protected function handle(string $no, string $content, array $vars = []) : mixed;
     
     
     /**
      * 发送短信
      * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @param string $template 模板ID或模板内容，模板内容支持 `{变量名}` 变量
+     * @param string $content 模板ID或模板内容，模板内容支持 `{变量名}` 变量
      * @param array  $vars 自定义变量键值对
      * @return mixed
+     * @throws Throwable
      */
-    public function send(string $no, string $template, array $vars = []) : mixed
+    public function send(string $no, string $content, array $vars = []) : mixed
     {
         $no = trim($no);
         if (!$no) {
             throw new VerifyException('发送号码不能为空', 'no');
         }
         
-        return $this->handleSend($this->coverNo($no), $template, $vars);
+        return $this->handle($this->coverNo($no), $content, $vars);
     }
     
     
     /**
-     * 获取发送短信验证码账户类型
-     * @return string
-     */
-    private function getCodeAccountType() : string
-    {
-        return Sms::getConfig('verify_code.account_type') ?: 'phone';
-    }
-    
-    
-    /**
-     * 发送短信验证码
-     * @param string $scene 验证码场景名称，依据 `config/sms.php` 中的 `template` 键，如：code
+     * 通过模版ID发送短信
+     * @param string $id 模板ID，依据 `config/sms.php` 中的 `template` 键，如：`login`
      * @param string $no 手机号，如：+8613333333333 或 13333333333
+     * @param array  $vars 模板变量
      * @param string $lang 指定语言标识，如 `zh-cn`
-     * @return array{expire: int, repeat: int, length: int, style: int, code: string}
+     * @return mixed
      * @throws Throwable
      */
-    public function sendCode(string $scene, string $no, string $lang = '') : array
+    public function sendTemplate(string $id, string $no, array $vars = [], string $lang = '') : mixed
     {
-        $lang     = $lang ?: Lang::getLangSet();
+        $lang     = strtolower($lang ?: Lang::getLangSet());
         $lang     = $lang == 'zh-cn' ? '' : '_' . $lang;
-        $template = $this->config['template'][$scene . $lang] ?? '';
+        $key      = $id . $lang;
+        $template = $this->config['template'][$key] ?? '';
         if (!$template) {
-            throw new RuntimeException(sprintf('未配置短信验证码模板: %s', $scene . $lang));
+            throw new RuntimeException(sprintf('未配置短信模板: %s', $key));
         }
         
-        $no          = $this->coverNo($no);
-        $accountType = $this->getCodeAccountType();
-        $code        = VerifyCode::create($accountType, $no, $scene);
-        try {
-            $this->send($no, $template, ['code' => $code]);
-        } catch (Throwable $e) {
-            VerifyCode::clear($accountType, $no, $scene);
-            
-            throw $e;
-        }
-        
-        return [
-            'code'   => $code,
-            'expire' => VerifyCode::getCodeExpire($accountType),
-            'repeat' => VerifyCode::getCodeRepeat($accountType),
-            'length' => VerifyCode::getCodeLength($accountType),
-            'style'  => VerifyCode::getCodeStyle($accountType)
-        ];
-    }
-    
-    
-    /**
-     * 校验短信验证码
-     * @param string $scene 验证码场景名称，依据 `config/sms.php` 中的 `template` 键，如：code
-     * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @param string $code 短信验证码
-     * @param bool   $clear 验证完毕是否清理
-     * @return void
-     */
-    public function checkCode(string $scene, string $no, string $code, bool $clear = true) : void
-    {
-        VerifyCode::check($this->getCodeAccountType(), $this->coverNo($no), $code, $scene, $clear);
-    }
-    
-    
-    /**
-     * 清理短信验证码
-     * @param string $scene 验证码场景名称，依据 `config/sms.php` 中的 `template` 键，如：code
-     * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @return void
-     */
-    public function clearCode(string $scene, string $no) : void
-    {
-        VerifyCode::clear($this->getCodeAccountType(), $this->coverNo($no), $scene);
+        return $this->send($no, $template, $vars);
     }
 }

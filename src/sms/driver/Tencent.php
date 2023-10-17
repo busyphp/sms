@@ -187,12 +187,12 @@ class Tencent extends Driver
     /**
      * 发送短信
      * @param string $no 手机号，如：+8613333333333 或 13333333333
-     * @param string $template 模板ID
+     * @param string $content 模板ID
      * @param array  $vars 自定义变量键值对
      * @return SendStatus
      * @throws TencentCloudSDKException
      */
-    protected function handleSend(string $no, string $template, array $vars = []) : SendStatus
+    protected function handle(string $no, string $content, array $vars = []) : SendStatus
     {
         $cred        = new Credential($this->secretId, $this->secretKey);
         $httpProfile = new HttpProfile();
@@ -209,9 +209,9 @@ class Tencent extends Driver
         
         $req = new SendSmsRequest();
         $req->setSmsSdkAppId($this->sdkAppId);
-        $req->setTemplateId($template);
+        $req->setTemplateId($content);
         $req->setTemplateParamSet($args);
-        $req->setPhoneNumberSet([$this->coverNo($no)]);
+        $req->setPhoneNumberSet([$no]);
         $req->setSignName($this->sign ?: '');
         $req->setExtendCode($this->extendCode ?: '');
         $req->setSenderId($this->senderId ?: '');

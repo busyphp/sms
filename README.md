@@ -9,18 +9,16 @@
 composer require busyphp/sms
 ```
 
-> 安装完成后可以通过后台管理 > 开发模式 > 插件管理进行 `安装`
-
 > 配置 `config/sms.php`
 
 ```php
 <?php
 return [
     // 默认短信通道
-    'default'     => 'aliyun',
+    'default'  => 'aliyun',
     
     // 配置短信通道
-    'drivers'     => [
+    'drivers'  => [
         // 阿里云短信配置
         'aliyun'    => [
             'type'              => 'aliyun',
@@ -73,15 +71,9 @@ return [
         ]
     ],
     
-    // busyphp/verify-code插件配置
-    'verify_code' => [
-        // 设置发送短信验证码的账号类型
-        'account_type' => 'phone'
-    ],
-    
     // 短信模板配置
-    'template'    => [
-        // 场景名称 => 配置
+    'template' => [
+        // 模版ID => 模版配置
         'login' => [
             // 表单名称
             'name' => '登录验证码',
@@ -93,7 +85,7 @@ return [
     ],
     
     // 多语言配置，默认为简体中文，故不需要添加 `zh-cn`
-    'lang'        => [
+    'lang'     => [
     ]
 ];
 ```
@@ -107,19 +99,22 @@ return [
 \BusyPHP\facade\Sms::driver()->send('手机号', 'TEMPLATE_ID1', ['code' => 123456]);
 ```
 
-## 验证码发送/验证/清理
+## 按短信模板发送
+
+安装 `busyphp/verify-code`
+
+> composer require busyphp/verify-code
+
+示例：
 
 ```php
+use BusyPHP\facade\VerifyCode;
+use BusyPHP\facade\Sms;
 
-// 发送
-$code = \BusyPHP\facade\Sms::driver()->sendCode('login', '手机号');
+$mobile = '13333333333';
+$code   = VerifyCode::create('phone', $mobile, 'login');
 
-// 发送 - 使用特定渠道
-$code = \BusyPHP\facade\Sms::driver('aliyun')->sendCode('login', '手机号');
-
-// 验证
-\BusyPHP\facade\Sms::driver()->checkCode('login', '手机号', '验证码');
-
-// 清理验证码
-\BusyPHP\facade\Sms::driver()->clearCode('login', '手机号');
+Sms::driver()->sendTemplate('login', $mobile, [
+    'code' => $code
+]);
 ```
